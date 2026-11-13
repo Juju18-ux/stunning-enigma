@@ -1070,14 +1070,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Calculate days since Mar 15, 2025 using GMT+3 date (day flips at GMT+3 midnight)
   function getDaysTogetherGMT3() {
-    const now = new Date();
-    // Shift 'now' into GMT+3
-    const gmt3 = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
-    // Build a plain UTC date representing today in GMT+3 (no time component)
+    const now  = new Date();
+    // UTC + 3 hours = GMT+3 (simple, correct regardless of viewer's timezone)
+    const gmt3 = new Date(now.getTime() + 3 * 3600000);
+    // Today as a pure date in GMT+3 (strip the time component)
     const todayGMT3 = Date.UTC(gmt3.getUTCFullYear(), gmt3.getUTCMonth(), gmt3.getUTCDate());
-    // Start date: March 15, 2025 (plain UTC date)
-    const startGMT3 = Date.UTC(2025, 2, 15);
-    return Math.floor((todayGMT3 - startGMT3) / 86400000);
+    // Start date: March 15, 2025 as a pure date
+    const startDate = Date.UTC(2025, 2, 15);
+    return Math.floor((todayGMT3 - startDate) / 86400000);
   }
 
   // --- Live GMT+3 Clock ---
@@ -1093,8 +1093,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function tick() {
       const now  = new Date();
-      // Convert to GMT+3
-      const gmt3 = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+      // UTC + 3 hours = GMT+3 (correct regardless of viewer's local timezone)
+      const gmt3 = new Date(now.getTime() + 3 * 3600000);
 
       const h = String(gmt3.getUTCHours()).padStart(2, '0');
       const m = String(gmt3.getUTCMinutes()).padStart(2, '0');
