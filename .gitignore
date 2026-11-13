@@ -1,0 +1,5 @@
+# Raw uploaded files in root (already organized in assets/)
+WhatsApp*
+*.tmp
+.DS_Store
+Thumbs.db
