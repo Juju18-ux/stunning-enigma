@@ -402,6 +402,11 @@
                 <p class="text-[9px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">Days Together</p>
               </div>
             </div>
+            <!-- GMT+3 Live Clock -->
+            <div class="mt-2.5 pt-2 border-t border-stone-100">
+              <p id="gmt3-clock" class="text-base font-mono font-extrabold text-stone-900 leading-none tracking-tight">00:00:00</p>
+              <p id="gmt3-date" class="text-[9px] text-stone-400 font-bold tracking-wider mt-0.5">GMT+3</p>
+            </div>
           </div>
 
           <!-- Bottom Action Buttons Floating over portrait base -->
@@ -708,7 +713,24 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="py-10 border-t border-stone-200 bg-white text-center text-xs text-stone-500 space-y-2">
+  <footer class="py-10 border-t border-stone-200 bg-white text-center text-xs text-stone-500 space-y-3">
+    <!-- GMT+3 Live Clock Bar -->
+    <div class="flex items-center justify-center gap-3 pb-2">
+      <div class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-50 border border-stone-200 shadow-sm">
+        <span class="text-[#FF7843] text-sm">🕐</span>
+        <div class="text-left">
+          <p id="gmt3-clock-footer" class="font-mono font-extrabold text-stone-900 text-sm leading-none tracking-tight"></p>
+          <p id="gmt3-date-footer" class="text-[10px] text-stone-400 font-bold mt-0.5">GMT +3</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FFF5F0] border border-orange-200 shadow-sm">
+        <span class="text-sm" style="animation: heartbeat 1.2s ease-in-out infinite;">🫀</span>
+        <div class="text-left">
+          <p id="days-together-footer" class="font-extrabold text-[#FF7843] text-sm leading-none">608 days</p>
+          <p class="text-[10px] text-stone-400 font-bold mt-0.5">Together & counting</p>
+        </div>
+      </div>
+    </div>
     <p class="font-semibold text-stone-700">
       "Megg Through The Years" — Crafted with infinite love for Megg.
     </p>

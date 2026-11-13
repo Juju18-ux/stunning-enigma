@@ -1061,8 +1061,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function initDaysTogether() {
     const el = document.getElementById('days-together-count');
     if (!el) return;
-    // 🗓️  Set YOUR anniversary / "together since" date here (YYYY, M-1, D):
-    const start = new Date(2024, 0, 1); // ← Change to your actual date
+    // 🗓️ Together since March 15, 2025 → 608 days on Nov 13, 2026
+    const start = new Date(2025, 2, 15); // March 15, 2025
     function update() {
       const ms = Date.now() - start.getTime();
       const days = Math.floor(ms / 86400000);
@@ -1071,4 +1071,50 @@ document.addEventListener('DOMContentLoaded', () => {
     update();
     setInterval(update, 60000);
   }
+
+  // --- Live GMT+3 Clock ---
+  function initGMT3Clock() {
+    const clockEl  = document.getElementById('gmt3-clock');
+    const dateEl   = document.getElementById('gmt3-date');
+    const clockEl2 = document.getElementById('gmt3-clock-footer');
+    const dateEl2  = document.getElementById('gmt3-date-footer');
+    const daysFooter = document.getElementById('days-together-footer');
+
+    const dayNames   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const start = new Date(2025, 2, 15); // March 15, 2025
+
+    function tick() {
+      const now = new Date();
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const gmt3 = new Date(utc + 3 * 3600000);
+
+      const h = String(gmt3.getHours()).padStart(2, '0');
+      const m = String(gmt3.getMinutes()).padStart(2, '0');
+      const s = String(gmt3.getSeconds()).padStart(2, '0');
+      const timeStr = `${h}:${m}:${s}`;
+
+      const dow = dayNames[gmt3.getDay()];
+      const d   = gmt3.getDate();
+      const mon = monthNames[gmt3.getMonth()];
+      const yr  = gmt3.getFullYear();
+      const dateStr = `${dow}, ${d} ${mon} ${yr}`;
+
+      if (clockEl)  clockEl.textContent  = timeStr;
+      if (dateEl)   dateEl.textContent   = dateStr;
+      if (clockEl2) clockEl2.textContent = timeStr;
+      if (dateEl2)  dateEl2.textContent  = dateStr;
+
+      // Keep footer days synced
+      if (daysFooter) {
+        const days = Math.floor((Date.now() - start.getTime()) / 86400000);
+        daysFooter.textContent = days.toLocaleString() + ' days';
+      }
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  initDaysTogether();
+  initGMT3Clock();
 });
