@@ -1057,47 +1057,54 @@ document.addEventListener('DOMContentLoaded', () => {
   initBackToTop();
   initLightboxSwipe();
 
-  // --- Days-Together Live Counter ---
+  // --- Days-Together Live Counter (GMT+3 aware) ---
   function initDaysTogether() {
     const el = document.getElementById('days-together-count');
     if (!el) return;
-    // 🗓️ Together since March 15, 2025 → 608 days on Nov 13, 2026
-    const start = new Date(2025, 2, 15); // March 15, 2025
     function update() {
-      const ms = Date.now() - start.getTime();
-      const days = Math.floor(ms / 86400000);
-      el.textContent = days.toLocaleString() + ' days';
+      el.textContent = getDaysTogetherGMT3().toLocaleString() + ' days';
     }
     update();
     setInterval(update, 60000);
   }
 
+  // Calculate days since Mar 15, 2025 using GMT+3 date (day flips at GMT+3 midnight)
+  function getDaysTogetherGMT3() {
+    const now = new Date();
+    // Shift 'now' into GMT+3
+    const gmt3 = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+    // Build a plain UTC date representing today in GMT+3 (no time component)
+    const todayGMT3 = Date.UTC(gmt3.getUTCFullYear(), gmt3.getUTCMonth(), gmt3.getUTCDate());
+    // Start date: March 15, 2025 (plain UTC date)
+    const startGMT3 = Date.UTC(2025, 2, 15);
+    return Math.floor((todayGMT3 - startGMT3) / 86400000);
+  }
+
   // --- Live GMT+3 Clock ---
   function initGMT3Clock() {
-    const clockEl  = document.getElementById('gmt3-clock');
-    const dateEl   = document.getElementById('gmt3-date');
-    const clockEl2 = document.getElementById('gmt3-clock-footer');
-    const dateEl2  = document.getElementById('gmt3-date-footer');
+    const clockEl    = document.getElementById('gmt3-clock');
+    const dateEl     = document.getElementById('gmt3-date');
+    const clockEl2   = document.getElementById('gmt3-clock-footer');
+    const dateEl2    = document.getElementById('gmt3-date-footer');
     const daysFooter = document.getElementById('days-together-footer');
 
     const dayNames   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const start = new Date(2025, 2, 15); // March 15, 2025
 
     function tick() {
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const gmt3 = new Date(utc + 3 * 3600000);
+      const now  = new Date();
+      // Convert to GMT+3
+      const gmt3 = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
 
-      const h = String(gmt3.getHours()).padStart(2, '0');
-      const m = String(gmt3.getMinutes()).padStart(2, '0');
-      const s = String(gmt3.getSeconds()).padStart(2, '0');
+      const h = String(gmt3.getUTCHours()).padStart(2, '0');
+      const m = String(gmt3.getUTCMinutes()).padStart(2, '0');
+      const s = String(gmt3.getUTCSeconds()).padStart(2, '0');
       const timeStr = `${h}:${m}:${s}`;
 
-      const dow = dayNames[gmt3.getDay()];
-      const d   = gmt3.getDate();
-      const mon = monthNames[gmt3.getMonth()];
-      const yr  = gmt3.getFullYear();
+      const dow     = dayNames[gmt3.getUTCDay()];
+      const d       = gmt3.getUTCDate();
+      const mon     = monthNames[gmt3.getUTCMonth()];
+      const yr      = gmt3.getUTCFullYear();
       const dateStr = `${dow}, ${d} ${mon} ${yr}`;
 
       if (clockEl)  clockEl.textContent  = timeStr;
@@ -1105,10 +1112,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (clockEl2) clockEl2.textContent = timeStr;
       if (dateEl2)  dateEl2.textContent  = dateStr;
 
-      // Keep footer days synced
+      // Days counter also uses GMT+3 — ticks up at GMT+3 midnight
       if (daysFooter) {
-        const days = Math.floor((Date.now() - start.getTime()) / 86400000);
-        daysFooter.textContent = days.toLocaleString() + ' days';
+        daysFooter.textContent = getDaysTogetherGMT3().toLocaleString() + ' days';
       }
     }
     tick();
