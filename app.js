@@ -901,11 +901,12 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFilterAndSearch();
   };
 
-  // --- 15. Smooth Navigation ---
+  // --- 15. Smooth Nav + Scroll-Spy + Scroll-Reveal + Back-to-Top ---
   function initFloatingNav() {
     const nav = document.getElementById('floating-navbar');
     if (!nav) return;
 
+    // Nav shadow on scroll
     window.addEventListener('scroll', () => {
       if (window.scrollY > 150) {
         nav.classList.add('shadow-xl', 'backdrop-blur-2xl');
@@ -913,5 +914,161 @@ document.addEventListener('DOMContentLoaded', () => {
         nav.classList.remove('shadow-xl');
       }
     });
+
+    // --- Scroll-Spy: highlight active nav pill ---
+    const sections = [
+      { id: 'hero',           href: '#hero' },
+      { id: 'eras-section',   href: '#eras-section' },
+      { id: 'video-section',  href: '#video-section' },
+      { id: 'gallery-section',href: '#gallery-section' },
+      { id: 'letter-section', href: '#letter-section' },
+      { id: 'reasons-section',href: '#reasons-section' }
+    ];
+    const navLinks = nav.querySelectorAll('a[href^="#"]');
+
+    function updateActiveLink() {
+      let current = 'hero';
+      sections.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el && window.scrollY >= el.offsetTop - 160) current = s.id;
+      });
+      navLinks.forEach(link => {
+        const isActive = link.getAttribute('href') === `#${current}`;
+        if (isActive) {
+          link.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-[#FF7843] shadow-md shadow-orange-500/25 transition-all';
+        } else {
+          link.className = 'px-3.5 py-1.5 rounded-full text-xs font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-all hidden sm:inline';
+          if (link.getAttribute('href') === '#hero') {
+            link.className = 'px-3.5 py-1.5 rounded-full text-xs font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-all';
+          }
+        }
+      });
+    }
+    window.addEventListener('scroll', updateActiveLink, { passive: true });
+    updateActiveLink();
+  }
+
+  // --- 16. Scroll-Reveal Entrance Animations ---
+  function initScrollReveal() {
+    const style = document.createElement('style');
+    style.textContent = `
+      .reveal-hidden {
+        opacity: 0;
+        transform: translateY(32px);
+        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .reveal-visible {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const targets = document.querySelectorAll('section, footer');
+    targets.forEach((el, i) => {
+      el.classList.add('reveal-hidden');
+      el.style.transitionDelay = `${(i % 3) * 60}ms`;
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.07 });
+
+    targets.forEach(el => observer.observe(el));
+  }
+
+  // --- 17. Back-to-Top Button ---
+  function initBackToTop() {
+    const btn = document.createElement('button');
+    btn.id = 'back-to-top-btn';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+      </svg>
+      <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-top:1px;">Top</span>
+    `;
+    Object.assign(btn.style, {
+      position: 'fixed',
+      bottom: '28px',
+      right: '20px',
+      zIndex: '9000',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '48px',
+      height: '48px',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg,#FF7843,#FFA178)',
+      color: '#fff',
+      border: '2px solid rgba(255,255,255,0.4)',
+      boxShadow: '0 6px 24px -4px rgba(255,120,67,0.5)',
+      cursor: 'pointer',
+      opacity: '0',
+      transform: 'translateY(16px) scale(0.85)',
+      transition: 'opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1)',
+      pointerEvents: 'none'
+    });
+    document.body.appendChild(btn);
+
+    window.addEventListener('scroll', () => {
+      const show = window.scrollY > 400;
+      btn.style.opacity = show ? '1' : '0';
+      btn.style.transform = show ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.85)';
+      btn.style.pointerEvents = show ? 'auto' : 'none';
+    }, { passive: true });
+
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.romanticAudio) window.romanticAudio.playPopSound();
+    });
+  }
+
+  // --- 18. Lightbox Touch Swipe (Mobile) ---
+  function initLightboxSwipe() {
+    const modal = document.getElementById('lightbox-modal');
+    if (!modal) return;
+    let touchStartX = null;
+
+    modal.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    modal.addEventListener('touchend', e => {
+      if (touchStartX === null) return;
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) nextLightboxPhoto();
+        else prevLightboxPhoto();
+      }
+      touchStartX = null;
+    }, { passive: true });
+  }
+
+  // Kick off finishing features
+  initDaysTogether();
+  initScrollReveal();
+  initBackToTop();
+  initLightboxSwipe();
+
+  // --- Days-Together Live Counter ---
+  function initDaysTogether() {
+    const el = document.getElementById('days-together-count');
+    if (!el) return;
+    // 🗓️  Set YOUR anniversary / "together since" date here (YYYY, M-1, D):
+    const start = new Date(2024, 0, 1); // ← Change to your actual date
+    function update() {
+      const ms = Date.now() - start.getTime();
+      const days = Math.floor(ms / 86400000);
+      el.textContent = days.toLocaleString() + ' days';
+    }
+    update();
+    setInterval(update, 60000);
   }
 });
